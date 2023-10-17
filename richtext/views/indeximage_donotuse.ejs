@@ -10,9 +10,10 @@
     <h1><%= title %></h1>
     <p>Welcome to <%= title %></p>
 
-    <form action="/submit" method="POST">
+    <form action="/submit" method="POST" enctype="multipart/form-data">
       <input type="hidden" name="content" id="content">
       <div id="editor"></div>
+      <input type="file" name="image" id="image">
       <button type="submit">Submit</button>
     </form>
 
@@ -34,15 +35,49 @@
         [{ 'font': [] }],
         [{ 'align': [] }],
         ['link', 'image', 'video'],
-        ['clean']                                         // remove formatting button
+        ['clean'],
+                                 // remove formatting button
       ];
 
       var quill = new Quill('#editor', {
         modules: {
-          toolbar: toolbarOptions
+          toolbar: toolbarOptions,
+          imageResize: {
+            displaySize: true
+          },
+          imageDrop: true
         },
         theme: 'snow'
       });
+
+      var form = document.querySelector('form');
+      var contentInput = document.querySelector('#content');
+      var imageInput = document.querySelector('#image');
+
+      form.onsubmit = function() {
+        contentInput.value = quill.root.innerHTML;
+      };
+
+      imageInput.addEventListener('change', function() {
+        var file = imageInput.files[0];
+        var formData = new FormData();
+        formData.append('image', file);
+
+        fetch('/upload', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          var range = quill.getSelection();
+          quill.insertEmbed(range.index, 'image', data.url);
+        })
+        .catch(error => console.error(error));
+      });
+    </script>
+
+    
+        
 
       var form = document.querySelector('form');
       var contentInput = document.querySelector('#content');
@@ -51,5 +86,7 @@
         contentInput.value = quill.root.innerHTML;
       };
     </script>
+
+    
   </body>
 </html>

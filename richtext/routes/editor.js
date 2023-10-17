@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-router.get('/editor', (req, res) => {
+router.get('/', (req, res) => {
+    console.log('editor');
     res.render('editor');
 });
 
